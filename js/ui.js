@@ -18,12 +18,12 @@ export function startSpectrum(canvas, analyser, sampleRate) {
     analyser.getByteFrequencyData(bins);
     const { width: w, height: h } = canvas;
     ctx2d.clearRect(0, 0, w, h);
-    // Show 0..6 kHz
-    const maxBin = Math.min(bins.length, Math.ceil(6000 / binHz));
+    // Show 0..6.5 kHz
+    const maxBin = Math.min(bins.length, Math.ceil(6500 / binHz));
     const bw = w / maxBin;
     for (let i = 0; i < maxBin; i++) {
       const f = i * binHz;
-      const inBand = f >= 1600 && f <= 3900;
+      const inBand = f >= 1650 && f <= 5400;
       const v = bins[i] / 255;
       ctx2d.fillStyle = inBand ? `rgba(53,224,90,${0.25 + 0.75 * v})` : `rgba(109,153,118,${0.15 + 0.6 * v})`;
       ctx2d.fillRect(i * bw, h - v * h, Math.max(1, bw - 1), v * h);

@@ -4,7 +4,7 @@ A dial-up modem in your browser: transfer a small file between two devices using
 
 ## How it works
 
-- **Modulation:** 16-ary FSK, hand-rolled with the Web Audio API. Each 20 ms symbol is one of 16 tones (2000–3500 Hz, 100 Hz apart) carrying 4 bits. Marker tones at 1700/3800 Hz frame the data. ~22 bytes/sec effective.
+- **Modulation:** 16-ary FSK, hand-rolled with the Web Audio API. Each 20 ms symbol is one of 16 tones carrying 4 bits — and the tones are musical semitones (C7–D♯8, ~2093–4978 Hz), so a transfer plays as a chromatic arpeggio rather than a screech. Marker tones at A6/E8 frame the data. ~22 bytes/sec effective.
 - **Framing:** each pass = preamble → header (name, size, MIME, CRC32) → 48-byte chunks (each with its own CRC32) → end-of-transmission. The sender loops passes; the receiver keeps whatever chunks verified and fills the holes on the next pass — no back-channel needed.
 - **Decoding:** a Goertzel filterbank evaluates exact tone frequencies at whatever sample rate the device runs (44.1 or 48 kHz), with per-frame clock resync so two devices' independent clocks stay aligned.
 

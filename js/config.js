@@ -3,18 +3,27 @@
 // rate (never hardcode 48000 — iOS often runs at 44100).
 
 export const SYMBOL_SEC = 0.020; // 50 baud
-export const RAMP_SEC = 0.003;   // raised-cosine fade at each symbol edge
+export const RAMP_SEC = 0.005;   // raised-cosine fade at each symbol edge
 export const WIN_SEC = 0.015;    // analysis window, centered in the symbol
 
-// 16 data tones, 4 bits/symbol: 2000..3500 Hz in 100 Hz steps.
-// Every tone is a multiple of 1/SYMBOL_SEC = 50 Hz, so each symbol holds an
-// integer number of cycles and starts/ends at phase 0.
+// 16 data tones, 4 bits/symbol, mapped to musical semitones (12-TET, A4=440)
+// C7..D#8 so random data plays as a chromatic arpeggio instead of an
+// inharmonic screech. The Goertzel filterbank evaluates exact frequencies, so
+// the tones don't need to sit on any uniform Hz grid — they only need enough
+// spacing (>=100 Hz; the tightest pair, C7-C#7, is 124 Hz apart). Symbol
+// edges are amplitude-ramped to zero, so phase continuity between symbols is
+// irrelevant.
 export const DATA_TONE_COUNT = 16;
-export const TONE_FREQS = [];
-for (let k = 0; k < DATA_TONE_COUNT; k++) TONE_FREQS.push(2000 + 100 * k);
-// Marker tones sit outside the data band so control can't be mistaken for data.
-TONE_FREQS.push(1700); // index 16 = M0
-TONE_FREQS.push(3800); // index 17 = M1
+export const TONE_FREQS = [
+  2093.0, 2217.46, 2349.32, 2489.02, // C7  C#7 D7  D#7
+  2637.02, 2793.83, 2959.96, 3135.96, // E7  F7  F#7 G7
+  3322.44, 3520.0, 3729.31, 3951.07, // G#7 A7  A#7 B7
+  4186.01, 4434.92, 4698.64, 4978.03, // C8  C#8 D8  D#8
+];
+// Marker tones sit outside the data band so control can't be mistaken for
+// data: A6 below, E8 above (a clean fifth over the top data note).
+TONE_FREQS.push(1760.0); // index 16 = M0
+TONE_FREQS.push(5274.04); // index 17 = M1
 export const M0 = 16;
 export const M1 = 17;
 
