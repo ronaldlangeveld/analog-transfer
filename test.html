@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>dialup-sim — loopback tests</title>
+  <style>
+    body { background: #0a0f0a; color: #b6e3bf; font-family: Menlo, monospace; padding: 24px; }
+    pre { white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>Loopback tests</h1>
+  <pre id="out">running…</pre>
+  <script type="module">
+    import { runTests } from './js/tests.js';
+    const out = document.getElementById('out');
+    out.textContent = '';
+    runTests((line) => { out.textContent += line + '\n'; });
+  </script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>dialup-sim — acoustic file transfer</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header>
+    <h1>DIALUP-SIM</h1>
+    <p class="tagline">file transfer over sound &mdash; 16-FSK &middot; 50 baud &middot; ~22 bytes/sec</p>
+  </header>
+
+  <nav id="tabs">
+    <button id="tab-send" class="tab active" type="button">&#9650; Send</button>
+    <button id="tab-receive" class="tab" type="button">&#9660; Receive</button>
+  </nav>
+
+  <main>
+    <section id="panel-send" class="panel active">
+      <label id="drop" for="file-input">
+        <span id="drop-label">Choose a file (max 10 KB)</span>
+        <input id="file-input" type="file" />
+      </label>
+      <dl id="file-info" class="hidden">
+        <dt>Name</dt><dd id="fi-name"></dd>
+        <dt>Size</dt><dd id="fi-size"></dd>
+        <dt>Chunks</dt><dd id="fi-chunks"></dd>
+        <dt>Time per pass</dt><dd id="fi-eta"></dd>
+      </dl>
+      <div class="controls">
+        <button id="btn-send" type="button" disabled>Transmit</button>
+        <label class="check"><input id="loop-toggle" type="checkbox" checked /> Loop until stopped</label>
+      </div>
+      <div id="send-status" class="status hidden">
+        <div class="statusline"><span id="send-state"></span><span id="send-pass"></span></div>
+        <div class="bar"><div id="send-progress"></div></div>
+      </div>
+      <p class="hint">Turn device volume up high. Keep the receiver's mic within ~30&ndash;60 cm.</p>
+    </section>
+
+    <section id="panel-receive" class="panel">
+      <div class="controls">
+        <button id="btn-listen" type="button">Start listening</button>
+      </div>
+      <div class="statusline"><span id="rx-state">Mic off.</span><span id="rx-count"></span></div>
+      <canvas id="spectrum" width="800" height="140"></canvas>
+      <div id="chunk-grid"></div>
+      <div id="result" class="hidden">
+        <h2>Transfer complete</h2>
+        <dl>
+          <dt>Name</dt><dd id="rx-name"></dd>
+          <dt>Size</dt><dd id="rx-size"></dd>
+        </dl>
+        <div id="preview"></div>
+        <a id="download" class="button" download>Download</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Everything is local &mdash; no network, no backend. The audio <em>is</em> the network.</p>
+  </footer>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
