@@ -88,6 +88,33 @@ header h1 {
   display: none;
 }
 
+.or {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  margin: 12px 0;
+}
+
+#text-input {
+  width: 100%;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--line);
+  padding: 10px;
+  font: inherit;
+  font-size: 0.9rem;
+  resize: vertical;
+}
+
+#text-input.armed {
+  border-color: var(--green);
+}
+
+#text-input:focus {
+  outline: none;
+  border-color: var(--green-dim);
+}
+
 dl {
   display: grid;
   grid-template-columns: auto 1fr;

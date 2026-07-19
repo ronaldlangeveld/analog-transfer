@@ -35,15 +35,38 @@ async function keepAwake(on) {
 
 // ---- send ----
 const sender = new Sender();
-let picked = null; // { bytes, name, mime, segments }
+let picked = null; // { bytes, name, mime, segments } — whatever transmits next
+let filePicked = null; // last successfully loaded file, kept so clearing the text falls back to it
+
+function makePicked(bytes, name, mime, displayName) {
+  return { bytes, name, mime, displayName, segments: buildPassSegments(bytes, name, mime) };
+}
+
+function arm(p, source) {
+  picked = p;
+  $('drop').classList.toggle('armed', source === 'file');
+  $('text-input').classList.toggle('armed', source === 'text');
+  $('file-info').classList.remove('hidden');
+  $('fi-name').textContent = p.displayName || p.name;
+  $('fi-size').textContent = fmtBytes(p.bytes.length);
+  $('fi-chunks').textContent = String(p.segments.length - 3); // minus preamble/header/eot
+  $('fi-eta').textContent = fmtSecs(passDurationSec(p.segments));
+  $('btn-send').disabled = false;
+}
+
+function disarm() {
+  picked = null;
+  $('drop').classList.remove('armed');
+  $('text-input').classList.remove('armed');
+  $('file-info').classList.add('hidden');
+  $('btn-send').disabled = true;
+}
 
 $('file-input').addEventListener('change', async (ev) => {
   const file = ev.target.files[0];
   if (!file) return;
   if (file.size > MAX_FILE_BYTES) {
     $('drop-label').textContent = `Too big: ${fmtBytes(file.size)} — max is ${fmtBytes(MAX_FILE_BYTES)}`;
-    picked = null;
-    $('btn-send').disabled = true;
     return;
   }
   if (file.size === 0) {
@@ -51,16 +74,28 @@ $('file-input').addEventListener('change', async (ev) => {
     return;
   }
   const bytes = new Uint8Array(await file.arrayBuffer());
-  const segments = buildPassSegments(bytes, file.name, file.type);
-  picked = { bytes, name: file.name, mime: file.type, segments };
-  $('drop').classList.add('armed');
+  filePicked = makePicked(bytes, file.name, file.type);
   $('drop-label').textContent = 'File loaded — ready to transmit';
-  $('file-info').classList.remove('hidden');
-  $('fi-name').textContent = file.name;
-  $('fi-size').textContent = fmtBytes(file.size);
-  $('fi-chunks').textContent = String(segments.length - 3); // minus preamble/header/eot
-  $('fi-eta').textContent = fmtSecs(passDurationSec(segments));
-  $('btn-send').disabled = false;
+  arm(filePicked, 'file');
+});
+
+$('text-input').addEventListener('input', (ev) => {
+  const text = ev.target.value;
+  if (text.length === 0) {
+    if (filePicked) arm(filePicked, 'file');
+    else disarm();
+    return;
+  }
+  const bytes = new TextEncoder().encode(text);
+  if (bytes.length > MAX_FILE_BYTES) {
+    $('fi-name').textContent = 'typed message';
+    $('fi-size').textContent = `${fmtBytes(bytes.length)} — too big, max ${fmtBytes(MAX_FILE_BYTES)}`;
+    $('file-info').classList.remove('hidden');
+    $('btn-send').disabled = true;
+    picked = null;
+    return;
+  }
+  arm(makePicked(bytes, 'message.txt', 'text/plain', 'typed message'), 'text');
 });
 
 let sending = false;

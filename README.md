@@ -14,7 +14,7 @@ A dial-up modem in your browser: transfer a small file between two devices using
 python3 -m http.server 8000     # or: npm run serve
 ```
 
-- Open http://localhost:8000 on the **sending** machine, pick a file (≤ 10 KB), hit Transmit. Volume up.
+- Open http://localhost:8000 on the **sending** machine, pick a file (≤ 10 KB) or just type a message, hit Transmit. Volume up.
 - Open the same app on the **receiving** device, Receive tab, Start listening. Keep the mic within ~30–60 cm.
 
 The mic requires a secure context: `localhost` works as-is; for a phone, deploy the folder to any static host (Netlify drag-and-drop, GitHub Pages) and open the HTTPS URL.
