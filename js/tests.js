@@ -67,6 +67,41 @@ function addNoise(samples, snrDb, seed = 7) {
   return out;
 }
 
+// N-pole one-pole-cascade lowpass: models small-speaker / off-axis-mic
+// high-frequency rolloff.
+function lowpass(samples, fs, fc, poles) {
+  const a = 1 - Math.exp((-2 * Math.PI * fc) / fs);
+  let out = samples;
+  for (let p = 0; p < poles; p++) {
+    const y = new Float32Array(out.length);
+    let lp = 0;
+    for (let i = 0; i < out.length; i++) {
+      lp += a * (out[i] - lp);
+      y[i] = lp;
+    }
+    out = y;
+  }
+  return out;
+}
+
+// Sparse deterministic room impulse response: direct path, early reflections,
+// late taps decaying with tau ~ 40 ms.
+function reverb(samples, fs, seed = 3) {
+  const rnd = lcg(seed);
+  const taps = [[0, 1], [7, 0.5], [13, -0.35], [23, 0.25], [31, -0.18]]
+    .map(([ms, g]) => [Math.round((ms / 1000) * fs), g]);
+  for (let k = 0; k < 24; k++) {
+    const ms = 35 + rnd() * 85;
+    const g = 0.15 * Math.exp(-ms / 40) * (rnd() < 0.5 ? -1 : 1);
+    taps.push([Math.round((ms / 1000) * fs), g]);
+  }
+  const out = new Float32Array(samples.length);
+  for (const [d, g] of taps) {
+    for (let i = d; i < samples.length; i++) out[i] += g * samples[i - d];
+  }
+  return out;
+}
+
 function resample(samples, factor) {
   const n = Math.floor(samples.length / factor);
   const out = new Float32Array(n);
@@ -182,6 +217,19 @@ export async function runTests(log = console.log) {
     const late = pass.subarray(Math.floor(pass.length * 0.4));
     const samples = withSilence(concat([late, pass]), fs);
     const { result } = decode(samples, fs);
+    return !!result && bytesEqual(result.bytes, file);
+  });
+
+  // Guards the tone plan: the whole alphabet (markers included) must survive
+  // steep high-frequency rolloff plus room reverb. The musical-semitone plan
+  // (markers at A6/E8) decoded zero frames here — any tone above ~4 kHz dies
+  // in this channel, so keep everything under ~3.8 kHz.
+  t('hostile channel: 3 kHz 4-pole rolloff + reverb, 3 passes', () => {
+    const fs = 48000;
+    const file = makeFile(300, 11);
+    const pass = passSamples(file, fs);
+    const stream = withSilence(concat([pass, pass, pass]), fs);
+    const { result } = decode(reverb(lowpass(stream, fs, 3000, 4), fs), fs);
     return !!result && bytesEqual(result.bytes, file);
   });
 
